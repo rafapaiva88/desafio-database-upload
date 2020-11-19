@@ -5,7 +5,7 @@ import { getCustomRepository, getRepository, In } from 'typeorm';
 import Transaction from '../models/Transaction';
 import Category from '../models/Category';
 
-import TransactionsRepository from '../repositories/TransactionsRepository';
+import TransactionRepository from '../repositories/TransactionsRepository';
 
 interface CSVTransaction {
   title: string;
@@ -16,7 +16,7 @@ interface CSVTransaction {
 
 class ImportTransactionsService {
   async execute(filePath: string): Promise<Transaction[]> {
-    const transactionsRepository = getCustomRepository(TransactionsRepository);
+    const transactionsRepository = getCustomRepository(TransactionRepository);
     const categoriesRepositoty = getRepository(Category);
 
     const contactsReadStream = fs.createReadStream(filePath);
