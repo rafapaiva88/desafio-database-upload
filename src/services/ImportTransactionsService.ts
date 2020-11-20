@@ -16,7 +16,7 @@ interface CSVTransaction {
 
 class ImportTransactionsService {
   async execute(filePath: string): Promise<Transaction[]> {
-    const transactionsRepository = getCustomRepository(TransactionsRepository);
+    const transactionRepository = getCustomRepository(TransactionsRepository);
     const categoriesRepository = getRepository(Category);
 
     const contactsReadStream = fs.createReadStream(filePath);
@@ -31,7 +31,7 @@ class ImportTransactionsService {
     const categories: string[] = [];
 
     parseCSV.on('data', async line => {
-      const { title, type, value, category } = line.map((cell: string) =>
+      const [title, type, value, category] = line.map((cell: string) =>
         cell.trim(),
       );
 
@@ -42,7 +42,7 @@ class ImportTransactionsService {
       transactions.push({ title, type, value, category });
     });
 
-    await new Promise(resolve => parseCSV.on('and', resolve));
+    await new Promise(resolve => parseCSV.on('end', resolve));
 
     const existentCategories = await categoriesRepository.find({
       where: {
@@ -68,7 +68,7 @@ class ImportTransactionsService {
 
     const finalCategories = [...newCategories, ...existentCategories];
 
-    const createdTransactions = transactionsRepository.create(
+    const createdTransactions = transactionRepository.create(
       transactions.map(transaction => ({
         title: transaction.title,
         type: transaction.type,
@@ -78,7 +78,7 @@ class ImportTransactionsService {
         ),
       })),
     );
-    await transactionsRepository.save(createdTransactions);
+    await transactionRepository.save(createdTransactions);
 
     await fs.promises.unlink(filePath);
 
